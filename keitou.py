@@ -402,7 +402,7 @@ class KeitouOS:
 
     def display_system_info(self):
         print("System Information:")
-        print("OS: Keitou Bullnix 1.1.0")
+        print("OS: Keitou Bullnix 1.1.1")
         print("Kernel: 1.1.0")
         print("Installed Packages:")
         for pkg in self.installed_packages:
@@ -478,38 +478,28 @@ class KeitouOS:
 
     def kitkat(self, sub_command):
         kitkat_script = os.path.join(self.base_directory, "bin", "kitkat.py")
-        os.system(f"python {kitkat_script}")
 
         # Разделяем подкоманду и пакет
         parts = sub_command.split()
-        if len(parts) < 2:
-            print("Ошибка: необходимо указать команду и пакет.")
+
+        if len(parts) < 1:
+            print("Ошибка: необходимо указать команду.")
             return
-        
+
         command = parts[0]
-        package = parts[1]
+        package = parts[1] if len(parts) > 1 else None  # Устанавливаем package в None, если его нет
 
         try:
             # Запускаем kitkat.py с аргументами командной строки
-            result = subprocess.run(['python', kitkat_script, command, package], check=True, text=True, capture_output=True)
+            if package:
+                result = subprocess.run(['python', kitkat_script, command, package], check=True, text=True, capture_output=True)
+            else:
+                result = subprocess.run(['python', kitkat_script, command], check=True, text=True, capture_output=True)
+
             print(result.stdout)  # Выводим стандартный вывод скрипта
         except subprocess.CalledProcessError as e:
             print(f"Ошибка при выполнении kitkat.py: {e.stderr}")  # Выводим ошибку, если скрипт завершился с ошибкой
 
-    def where(self, name):
-        found_paths = []
-        for dirpath, dirnames, filenames in os.walk(self.current_directory):
-            if name in filenames or name in dirnames:
-                found_paths.append(os.path.join(dirpath, name))
-
-        if found_paths:
-            print("Found the following paths:")
-            for path in found_paths:
-                print(f"- {path}")
-        else:
-            print(f"No files or directories named '{name}' found.")
-    
-    
 if __name__ == "__main__":
     game_os = KeitouOS()
     game_os.run()
