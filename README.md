@@ -1,6 +1,8 @@
 # keitouos
 KeitouOS - is simulator of operating system on Python.
 
+And one more point, the developer, that is, I am Russian, so not everything is fully translated into English, sorry.
+
 # ATTENTION!!
 I've added the Window Maker GUI, so far it's all experimental, and it's
 not a fact that it will work correctly I want you to test this desktop 
