@@ -4,8 +4,8 @@ import argparse
 import sys
 import time
 
-REPO_URL = "https://raw.githubusercontent.com/libreguru95/amaterasurepo/main"  # URL to access files
-API_URL = "https://api.github.com/repos/libreguru95/amaterasurepo/contents"  # URL to access the API
+REPO_URL = "https://raw.githubusercontent.com/libreguru95/aur/main"  # URL to access files
+API_URL = "https://api.github.com/repos/libreguru95/aur/contents"  # URL to access the API
 TARGET_DIRECTORY = "amaterasudir/usr"
 
 def ensure_target_directory():
