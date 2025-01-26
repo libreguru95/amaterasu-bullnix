@@ -1,0 +1,125 @@
+{
+    "commands": [
+        {
+            "name": "dosu",
+            "method": "execute_dosu_command",
+            "args": 1
+        },
+        {
+            "name": "kitkat",
+            "method": "kitkat",
+            "args": 1
+        },
+        {
+            "name": "nano",
+            "method": "run_my_nano",
+            "args": 1
+        },
+        {
+            "name": "cat",
+            "method": "cat_file",
+            "args": 1
+        },
+        {
+            "name": "wget",
+            "method": "download_file",
+            "args": 1
+        },
+        {
+            "name": "clear",
+            "method": "clear_screen",
+            "args": 0
+        },
+        {
+            "name": "myfetch",
+            "method": "display_system_info",
+            "args": 0
+        },
+        {
+            "name": "exit",
+            "method": "exit_program",
+            "args": 0
+        },
+        {
+            "name": "makedir",
+            "method": "make_directory",
+            "args": 1
+        },
+        {
+            "name": "rm",
+            "method": "remove_file",
+            "args": 1
+        },
+        {
+            "name": "mv",
+            "method": "move_file",
+            "args": 2
+        },
+        {
+            "name": "ls",
+            "method": "list_directory_contents",
+            "args": 0
+        },
+        {
+            "name": "cd",
+            "method": "change_directory",
+            "args": 1
+        },
+        {
+            "name": "color",
+            "method": "change_color_scheme",
+            "args": 1
+        },
+        {
+            "name": "plugin install",
+            "method": "install_plugin",
+            "args": 1
+        },
+        {
+            "name": "git clone",
+            "method": "clone_repository",
+            "args": 1
+        },
+        {
+            "name": "guess",
+            "method": "run_guess_number_game",
+            "args": 0
+        },
+        {
+            "name": "snake",
+            "method": "run_snake_game",
+            "args": 0
+        },
+        {
+            "name": "browser",
+            "method": "run_browser",
+            "args": 0
+        },
+        {
+            "name": "where",
+            "method": "where",
+            "args": 1
+        },
+        {
+            "name": "echo",
+            "method": "run_echo",
+            "args": 0
+        },
+        {
+            "name": "run",
+            "method": "runpy",
+            "args": 0
+        },
+        {
+            "name": "xstart",
+            "method": "xorgstart",
+            "args": 0
+        },
+        {
+            "name": "fdisk",
+            "method": "fdisk",
+            "args": 0
+        }
+    ]
+}
+

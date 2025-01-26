@@ -25,26 +25,12 @@ class amaterasu:
         self.current_directory = self.home_directory  # Текущая директория
         
         self.installed_packages = self.load_installed_packages()
-        self.available_packages = {
-            "nano": "A simple text editor.",
-            "git": "Version control system.",
-            "python": "Python programming language.",
-            "curl": "Command line tool for transferring data with URLs.",
-            "myfetch": "Display system information.",
-            "htop": "Interactive process viewer.",
-            "wget": "Network downloader.",
-            "guessgame": "First game for this OS.",
-            "linux-libre": "Do your System be a FREE",
-            "glibc": "Do you not know this pkg?",
-            "windowmaker": "Window Make is GUI for X11 (Xorg)",
-            "xorg": "It's X11 server for GUI",
-            "browser": "Simple Browser without GUI"  # Убедитесь, что здесь нет лишней запятой
-        }
         
         self.color_scheme = "default"
         self.plugins = self.load_plugins()
         self.file_permissions = {}  # Система прав доступа
         self.sudoers = self.load_sudoers()  # Загрузка списка пользователей с правами
+        self.load_commands()
 
         # Запускаем инициализацию системы
         SystemInit(self.base_directory)
@@ -124,71 +110,20 @@ class amaterasu:
             self.execute_command(command)
 
 
+
+    def load_commands(self):
+        with open('commands.json', 'r') as f:
+            self.commands = json.load(f)['commands']
+
     def execute_command(self, command):
-        if command.startswith("dosu "):
-            sub_command = command[5:]  # Убираем "dosu " из команды
-            self.execute_dosu_command(sub_command)
-        if command.startswith("kitkat "):
-            sub_command = command[7:]
-            self.kitkat(sub_command)
-        elif command.startswith("nano "):
-            filename = command.split(" ")[1]
-            self.run_my_nano(filename)
-        elif command.startswith("cat "):
-            filename = command.split(" ")[1]
-            self.cat_file(filename)  # Добавляем вызов метода cat_file
-        elif command.startswith("wget "):
-            url = command.split(" ")[1]
-            self.download_file(url)
-        elif command == "clear":
-            self.clear_screen()
-        elif command == "myfetch":
-            self.display_system_info()
-        elif command == "exit":
-            print("Exiting Amaterasu Bullnix, Goodbye!")
-            sys.exit()
-        elif command == "help":
-            self.show_help()
-        elif command.startswith("makedir "):
-            dirname = command.split(" ")[1]
-            self.make_directory(dirname)
-        elif command.startswith("rm "):
-            filename = command.split(" ")[1]
-            self.remove_file(filename)
-        elif command.startswith("mv "):
-            src, dest = command.split(" ")[1:3]
-            self.move_file(src, dest)
-        elif command == "ls":
-            self.list_directory_contents()
-        elif command.startswith("cd "):
-            dirname = command.split(" ")[1]
-            self.change_directory(dirname)
-        elif command.startswith("color "):
-            color = command.split(" ")[1]
-            self.change_color_scheme(color)
-        elif command.startswith("plugin install "):
-            plugin_name = command.split(" ")[2]
-            self.install_plugin(plugin_name)
-        elif command.startswith("git clone "):
-            repo_url = command.split(" ")[2]
-            self.clone_repository(repo_url)
-        elif command == "guess":
-            self.run_guess_number_game()  # Новая команда для запуска игры
-        elif command == "snake":
-            self.run_snake_game()
-        elif command == "browser":
-            self.run_browser()
-        elif command.startswith("where "):
-            name = command.split(" ")[1]
-            self.where(name)
-        elif command == "echo":
-            self.run_echo()
-        elif command == "run":
-            self.runpy()
-        elif command == "xstart":
-            self.xorgstart()
-        elif command == "fdisk":
-            self.fdisk()
+        for cmd in self.commands:
+            if command.startswith(cmd['name']):
+                args = command.split(" ")[1:1 + cmd['args']]
+                method = getattr(self, cmd['method'], None)
+                if method:
+                    method(*args)
+                return
+        print("Unknown command")
 
     def change_directory(self, dirname):
         new_directory = os.path.join(self.current_directory, dirname)
@@ -203,34 +138,6 @@ class amaterasu:
             print(f"Changed directory to: {self.current_directory}")
         else:
             print(f"Directory '{dirname}' not found.")
-
-    def show_help(self):
-        print("Available commands:")
-        print("cat <file> - output of text file.")
-        print("kitkat install <package> - Install a package.")
-        print("nano <filename> - Open a file in Nano editor.")
-        print("wget <url> - Download a file from the internet.")
-        print("clear - Clear the terminal screen.")
-        print("myfetch - Display system information.")
-        print("exit - Exit the OS.")
-        print("echo - Your message")
-        print("help - Show this help message.")
-        print("makedir <dirname> - Create a new directory.")
-        print("rm <filename> - Remove a file.")
-        print("mv <src> <dest> - Move or rename a file or directory.")
-        print("ls - List contents of the current directory.")
-        print("cd <dirname> - Change the current directory.")
-        print("color <color> - Change the terminal color scheme.")
-        print("plugin install <plugin_name> - Install a plugin.")
-        print("git clone <repo_url> - Clone a GitHub repository.")
-        print("kitkat update - Update the system.")
-        print("guess - Game.")
-        print("snake - Snake game from Nokia :3")
-        print("browser - Browser for this OS")
-        print("where - It's finding file")
-        print("run - Run Python program")
-        print("xstart - Start Xorg GUI")
-        print("fdisk - utilite for work with disks")
 
     def make_directory(self, dirname):
         dir_path = os.path.join(self.current_directory, dirname)
@@ -406,7 +313,7 @@ class amaterasu:
 
     def display_system_info(self):
         print("System Information:")
-        print("OS: Amaterasu Bullnix 0.01")
+        print("OS: Amaterasu Bullnix 1.0.2")
         print("Kernel: 1.1.0")
         print("Installed Packages:")
         for pkg in self.installed_packages:
