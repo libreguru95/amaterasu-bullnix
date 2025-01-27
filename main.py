@@ -27,7 +27,6 @@ class amaterasu:
         self.installed_packages = self.load_installed_packages()
         
         self.color_scheme = "default"
-        self.plugins = self.load_plugins()
         self.file_permissions = {}  # Система прав доступа
         self.sudoers = self.load_sudoers()  # Загрузка списка пользователей с правами
         self.load_commands()
@@ -74,31 +73,10 @@ class amaterasu:
             with open(sudoers_file, "r") as f:
                 return [line.strip() for line in f.readlines()]
         return []
-
-    def load_installed_packages(self):
-        installed_packages_file = os.path.join(self.base_directory, "installed_packages.txt")
-        if os.path.exists(installed_packages_file):
-            with open(installed_packages_file, "r") as f:
-                return [line.strip() for line in f.readlines()]
-        return []
-
-    def save_installed_packages(self):
-        installed_packages_file = os.path.join(self.base_directory, "installed_packages.txt")
-        with open(installed_packages_file, "w") as f:
-            for pkg in self.installed_packages:
-                f.write(pkg + "\n")
-
-    def load_plugins(self):
-        plugins_file = os.path.join(self.base_directory, "plugins.json")
-        if os.path.exists(plugins_file):
-            with open(plugins_file, "r") as f:
-                return json.load(f)
-        return {}
-
-    def save_plugins(self):
-        plugins_file = os.path.join(self.base_directory, "plugins.json")
-        with open(plugins_file, "w") as f:
-            json.dump(self.plugins, f)
+    
+    def exit(self):
+        print("Exiting from AmaterasuBullnix...")
+        sys.exit(0)  # Завершает выполнение программы
 
     def run(self):
         print("Welcome to Amaterasu Bullnix")
@@ -115,17 +93,51 @@ class amaterasu:
         with open('commands.json', 'r') as f:
             self.commands = json.load(f)['commands']
 
-    def execute_command(self, command):
-        for cmd in self.commands:
-            if command.startswith(cmd['name']):
-                args = command.split(" ")[1:1 + cmd['args']]
-                method = getattr(self, cmd['method'], None)
-                if method:
-                    method(*args)
-                return
-        print("Unknown command")
+    def load_installed_packages(self):
+        packages_dir = os.path.join(self.base_directory, 'bin')  # Путь к директории с пакетами
+        packages = []
 
-    def change_directory(self, dirname):
+        # Проверяем, существует ли директория
+        if os.path.exists(packages_dir):
+            # Проходим по всем файлам в директории
+            for filename in os.listdir(packages_dir):
+                # Проверяем, является ли файл Python
+                if filename.endswith('.py'):
+                    packages.append(filename[:-3])  # Добавляем имя файла без .py
+
+        return packages
+
+
+    def execute_command(self, command):
+        # Список команд, которые не требуют выполнения из bin
+        non_bin_commands = ['mv', 'makedir', 'ls', 'clear', 'cd', 'exit', 'wget', 'myfetch', 'dosu', 'git']
+
+        # Разделяем команду на имя и аргументы
+        parts = command.split()
+        cmd_name = parts[0]
+        args = parts[1:]
+
+        # Проверяем, является ли команда одной из не-bin команд
+        if cmd_name in non_bin_commands:
+            method = getattr(self, cmd_name, None)
+            if method:
+                method(*args)
+            else:
+                print("Unknown command")
+            return
+
+        # Если команда не из списка, проверяем, является ли она Python файлом в bin
+        python_file_path = os.path.join(self.base_directory, 'bin', f"{cmd_name}.py")
+        if os.path.isfile(python_file_path):
+            try:
+                subprocess.run(['python', python_file_path] + args)
+            except Exception as e:
+                print(f"Error running {cmd_name}: {e}")
+        else:
+            print("Unknown command")
+
+        
+    def cd(self, dirname):
         new_directory = os.path.join(self.current_directory, dirname)
         
         if dirname == "..":
@@ -139,7 +151,7 @@ class amaterasu:
         else:
             print(f"Directory '{dirname}' not found.")
 
-    def make_directory(self, dirname):
+    def makedir(self, dirname):
         dir_path = os.path.join(self.current_directory, dirname)
         try:
             os.makedirs(dir_path, exist_ok=False)
@@ -148,7 +160,7 @@ class amaterasu:
         except FileExistsError:
             print(f"Directory '{dirname}' already exists.")
 
-    def remove_file(self, filename):
+    def rm(self, filename):
         file_path = os.path.join(self.current_directory, filename)
         if self.check_permissions(file_path, "write"):
             try:
@@ -162,7 +174,7 @@ class amaterasu:
         else:
             print(f"You do not have permission to remove '{filename}'.")
 
-    def move_file(self, src, dest):
+    def mv(self, src, dest):
         src_path = os.path.join(self.current_directory, src)
         dest_path = os.path.join(self.current_directory, dest)
         if self.check_permissions(src_path, "write"):
@@ -177,108 +189,12 @@ class amaterasu:
         else:
             print(f"You do not have permission to move '{src}'.")
 
-    def list_directory_contents(self):
+    def ls(self):
         print("Contents of the current directory:")
         for item in os.listdir(self.current_directory):
             print(f"- {item}")
 
-    def change_color_scheme(self, color):
-        if color in ["default", "red", "green", "blue"]:
-            self.color_scheme = color
-            print(f"Color scheme changed to '{color}'.")
-        else:
-            print(f"Color '{color}' is not a valid option.")
-
-    def install_plugin(self, plugin_name):
-        if plugin_name not in self.plugins:
-            self.plugins[plugin_name] = {"installed": True}
-            self.save_plugins()
-            print(f"Plugin '{plugin_name}' installed successfully.")
-        else:
-            print(f"Plugin '{plugin_name}' is already installed.")
-
-    def remove_package(self, package_name):
-        if package_name in self.installed_packages:
-            self.installed_packages.remove(package_name)
-            self.save_installed_packages()
-            print(f"Package '{package_name}' removed successfully.")
-        else:
-            print(f"Package '{package_name}' is not installed.")
-
-    def search_package(self, query):
-        print("Searching for packages...")
-        found_packages = [pkg for pkg in self.available_packages if query in pkg]
-        if found_packages:
-            print("Found packages:")
-            for pkg in found_packages:
-                print(f"- {pkg}: {self.available_packages[pkg]}")
-        else:
-            print("No packages found.")
-
-    def list_package_info(self, package_name):
-        if package_name in self.available_packages:
-            print(f"Package: {package_name}")
-            print(f"Description: {self.available_packages[package_name]}")
-            # Здесь можно добавить логику для отображения зависимостей
-        else:
-            print(f"Package '{package_name}' not found.")
-
-
-    def install_package(self, package_name):
-        if package_name in self.available_packages:
-            if package_name not in self.installed_packages:
-                print(f"Starting installation of '{package_name}'...")
-                # Симуляция процесса установки
-                total_steps = 10  # Общее количество шагов для установки
-                for step in range(total_steps + 1):
-                    time.sleep(0.5)  # Симуляция времени установки
-                    percent = (step / total_steps) * 100
-                    bar_length = 40  # Длина полоски
-                    block = int(round(bar_length * step / total_steps))
-                    progress = "#" * block + "-" * (bar_length - block)
-                    print(f"\r[{progress}] {percent:.2f}%", end='')
-
-                print(f"\nPackage '{package_name}' installed successfully.")
-                self.installed_packages.append(package_name)
-                self.save_installed_packages()
-            else:
-                print(f"Package '{package_name}' is already installed.")
-        else:
-            print(f"Package '{package_name}' not found in available packages.")
-
-
-    def list_installed_packages(self):
-        if self.installed_packages:
-            print("Installed packages:")
-            for pkg in self.installed_packages:
-                print(f"- {pkg}: {self.available_packages[pkg]}")
-        else:
-            print("No packages installed.")
-
-    def list_available_packages(self):
-        print("Available packages:")
-        for pkg, desc in self.available_packages.items():
-            if pkg not in self.installed_packages:
-                print(f"- {pkg}: {desc}")
-
-
-    def run_my_nano(self, filename):
-        nano_script = os.path.join(self.base_directory, "bin", "my_nano.py")
-        os.system(f"python {nano_script} {filename}")
-
-    def run_snake_game(self):
-        snake_script = os.path.join(self.base_directory, "bin", "snakegame.py")
-        os.system(f"python {snake_script}")
-
-    def run_browser(self):
-        browser_script = os.path.join(self.base_directory, "bin", "browser.py")
-        os.system(f"python {browser_script}")
-
-    def run_echo(self):
-        echo_script = os.path.join(self.base_directory, "bin", "echo.py")
-        os.system(f"python {echo_script}")
-
-    def download_file(self, url):
+    def wget(self, url):
         try:
             filename = url.split("/")[-1]  # Получаем имя файла из URL
             file_path = os.path.join(self.current_directory, filename)
@@ -308,19 +224,16 @@ class amaterasu:
             print(f"Error downloading file: {e}")
 
 
-    def clear_screen(self):
+    def clear(self):
         os.system('cls' if os.name == 'nt' else 'clear')
 
-    def display_system_info(self):
+    def myfetch(self):
         print("System Information:")
-        print("OS: Amaterasu Bullnix 1.0.2")
+        print("OS: Amaterasu Bullnix 1.1.0")
         print("Kernel: 1.1.0")
-        print("Installed Packages:")
-        for pkg in self.installed_packages:
-            print(f"- {pkg}")
         print("sh: akaish")
 
-    def clone_repository(self, repo_url):
+    def git(self, repo_url):
         repo_name = repo_url.split("/")[-1].replace(".git", "")
         destination_path = os.path.join(self.home_directory, repo_name)
 
@@ -347,7 +260,7 @@ class amaterasu:
                 return permissions["write"] and permissions["owner"] == self.username
         return False
         
-    def execute_dosu_command(self, command):
+    def dosu(self, command):
         if self.username == "toor" or self.username in self.sudoers:
             print(f"Executing")
             print(f"Executing command with admin privileges: {command}")
@@ -355,7 +268,7 @@ class amaterasu:
         else:
             print("You do not have permission to use 'dosu'.")
             
-    def cat_file(self, filename):
+    def cat(self, filename):
         file_path = os.path.join(self.current_directory, filename)
         
         if not os.path.exists(file_path):
@@ -370,46 +283,6 @@ class amaterasu:
             content = f.read()
             print(content)  # Выводим содержимое файла
 
-    
-    def run_guess_number_game(self):
-        game_script = os.path.join(self.base_directory, "bin", "guess_number.py")
-        os.system(f"python {game_script}")
-
-    def runpy(self):
-        runpy_script = os.path.join(self.base_directory, "bin", "runpy.py")
-        os.system(f"python {runpy_script}")
-
-    def xorgstart(self):
-        xstart_script = os.path.join(self.base_directory, "bin", "windowmaker.py")
-        os.system(f"python {xstart_script}")
-
-    def fdisk(self):
-        fdisk_script = os.path.join(self.base_directory, "bin", "fdisk.py")
-        os.system(f"python {fdisk_script}")
-
-    def kitkat(self, sub_command):
-        kitkat_script = os.path.join(self.base_directory, "bin", "kitkat.py")
-
-        # Разделяем подкоманду и пакет
-        parts = sub_command.split()
-
-        if len(parts) < 1:
-            print("Ошибка: необходимо указать команду.")
-            return
-
-        command = parts[0]
-        package = parts[1] if len(parts) > 1 else None  # Устанавливаем package в None, если его нет
-
-        try:
-            # Запускаем kitkat.py с аргументами командной строки
-            if package:
-                result = subprocess.run(['python', kitkat_script, command, package], check=True, text=True, capture_output=True)
-            else:
-                result = subprocess.run(['python', kitkat_script, command], check=True, text=True, capture_output=True)
-
-            print(result.stdout)  # Выводим стандартный вывод скрипта
-        except subprocess.CalledProcessError as e:
-            print(f"Ошибка при выполнении kitkat.py: {e.stderr}")  # Выводим ошибку, если скрипт завершился с ошибкой
 
 if __name__ == "__main__":
     game_os = amaterasu()
