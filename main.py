@@ -75,19 +75,23 @@ class amaterasu:
         return []
     
     def exit(self):
-        print("Exiting from AmaterasuBullnix...")
-        sys.exit(0)  # Завершает выполнение программы
+        confirm = input("Are you sure you want to exit? (y/n): ")
+        if confirm.lower() == 'y':
+            print("Exiting from Amaterasu Bullnix...")
+            sys.exit(0)
 
     def run(self):
         print("Welcome to Amaterasu Bullnix")
         while True:
-            if self.username == "toor":
-                command = input(f"{self.username}@amaterasu:~# ")  # Для пользователя toor
+            # Заменяем домашнюю директорию на ~ в приглашении
+            if self.current_directory == self.home_directory:
+                current_dir_display = "~"
             else:
-                command = input(f"{self.username}@amaterasu:~$ ")  # Для остальных пользователей
+                current_dir_display = self.current_directory.replace(self.home_directory, "~")
+
+            prompt = f"{self.username}@amaterasu:{current_dir_display}# " if self.username == "toor" else f"{self.username}@amaterasu:{current_dir_display}$ "
+            command = input(prompt)
             self.execute_command(command)
-
-
 
     def load_commands(self):
         with open('commands.json', 'r') as f:
@@ -109,24 +113,47 @@ class amaterasu:
 
 
     def execute_command(self, command):
-        # Список команд, которые не требуют выполнения из bin
-        non_bin_commands = ['mv', 'makedir', 'ls', 'clear', 'cd', 'exit', 'wget', 'myfetch', 'dosu', 'git']
-
-        # Разделяем команду на имя и аргументы
+        # Split the command into name and arguments
         parts = command.split()
         cmd_name = parts[0]
         args = parts[1:]
 
-        # Проверяем, является ли команда одной из не-bin команд
+        # Dictionary with commands and usage messages
+        usage_messages = {
+            'cd': "Usage: cd <directory>",
+            'makedir': "Usage: makedir <directory>",
+            'rm': "Usage: rm <filename>",
+            'mv': "Usage: mv <source> <destination>",
+            'wget': "Usage: wget <url>",
+            'git': "Usage: git <repository_url>",
+            'ls': "Usage: ls",
+            'clear': "Usage: clear",
+            'myfetch': "Usage: myfetch",
+            'dosu': "Usage: dosu <command>",
+            'exit': "Usage: exit",  # Add exit command usage
+            # Add other commands as needed
+        }
+
+        # List of non-bin commands
+        non_bin_commands = list(usage_messages.keys())
+
         if cmd_name in non_bin_commands:
+            if cmd_name == 'exit':
+                self.exit()  # Call the exit method directly
+                return
+
             method = getattr(self, cmd_name, None)
             if method:
-                method(*args)
+                # Check if an argument is required for the command
+                if cmd_name in usage_messages and (len(args) == 0 and cmd_name != 'ls' and cmd_name != 'clear' and cmd_name != 'myfetch'):
+                    print(usage_messages[cmd_name])
+                else:
+                    method(*args)
             else:
                 print("Unknown command")
             return
 
-        # Если команда не из списка, проверяем, является ли она Python файлом в bin
+        # If the command is not in the list, check if it is a Python file in bin
         python_file_path = os.path.join(self.base_directory, 'bin', f"{cmd_name}.py")
         if os.path.isfile(python_file_path):
             try:
@@ -136,9 +163,14 @@ class amaterasu:
         else:
             print("Unknown command")
 
+
         
     def cd(self, dirname):
         new_directory = os.path.join(self.current_directory, dirname)
+
+        if not dirname:
+            print("Usage: cd <directory>")
+            return
         
         if dirname == "..":
             new_directory = os.path.dirname(self.current_directory)
@@ -228,10 +260,34 @@ class amaterasu:
         os.system('cls' if os.name == 'nt' else 'clear')
 
     def myfetch(self):
+        ascii_art = """
+                      XXX                 
+                      X                   
+                     X             XX     
+     XXX          XXXXXXXXX     XXX       
+        XX     XXXXXXXXXXXXX  X X         
+           X XXXXXXXX  XXXXXXXX           
+              XXXXXX    XXXXXX            
+             XXXXXX  XX  XXXXXX           
+             XXXXX  XXXX  XXXXXXXXX       
+      XX X  XXXXX          XXXX    X  X   
+    XX        XX  XXXXXXXX  XXX        XXX
+                 XXXXXXXXXXX              
+                X XXXXXXXXXX  X           
+             XX        X       X          
+            X          X        X         
+                      X           X       
+                     XX           XX      
+                     X                    
+        """
+        print(ascii_art)
         print("System Information:")
-        print("OS: Amaterasu Bullnix 1.1.0")
+        print("-------------------")
+        print("OS: Amaterasu Bullnix 1.2.0")
         print("Kernel: 1.1.0")
+        print("------------------")
         print("sh: akaish")
+
 
     def git(self, repo_url):
         repo_name = repo_url.split("/")[-1].replace(".git", "")
