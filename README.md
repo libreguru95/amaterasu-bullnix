@@ -70,5 +70,3 @@ Class for implementing the Amaterasu Bullnix command shell.
 - To execute commands with administrator privileges, use the `dosu` command.
 
 ---
-
-This documentation can be further enhanced with usage examples and more detailed descriptions of each command if needed.
