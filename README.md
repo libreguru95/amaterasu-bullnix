@@ -1,13 +1,11 @@
 # Amaterasu Bullnix
 This is a fork of KeitouOS, the purpose of this distribution is to improve the operating system simulator by changing the main code.
-Sure! Here’s the documentation translated into English:
-
 ---
 
 # Amaterasu Bullnix - Documentation
 
 ## Description
-Amaterasu Bullnix is a simple command shell written in Python that allows users to interact with the file system, execute commands, and manage files. The shell supports a permission system and provides basic commands for working with files and directories.
+Amaterasu Bullnix is a simple command shell (or simulator of OS) written in Python that allows users to interact with the file system, execute commands, and manage files. The shell supports a permission system and provides basic commands for working with files and directories.
 
 ## Classes
 
