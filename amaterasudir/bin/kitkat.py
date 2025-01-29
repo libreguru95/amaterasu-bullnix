@@ -6,7 +6,7 @@ import time
 
 REPO_URL = "https://raw.githubusercontent.com/libreguru95/aur/main"  # URL to access files
 API_URL = "https://api.github.com/repos/libreguru95/aur/contents"  # URL to access the API
-TARGET_DIRECTORY = "amaterasudir/usr"
+TARGET_DIRECTORY = "amaterasudir/bin"
 
 def ensure_target_directory():
     """Creates the target directory if it does not exist."""
